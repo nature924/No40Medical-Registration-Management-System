@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.HuanzheDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.huanzhe_name as huanzheName
+        ,a.huanzhe_phone as huanzhePhone
+        ,a.huanzhe_id_number as huanzheIdNumber
+        ,a.huanzhe_photo as huanzhePhoto
+        ,a.sex_types as sexTypes
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.HuanzheView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+
+        FROM huanzhe  a
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test=" params.huanzheName != '' and params.huanzheName != null and params.huanzheName != 'null' ">
+                and a.huanzhe_name like CONCAT('%',#{params.huanzheName},'%')
+            </if>
+            <if test=" params.huanzhePhone != '' and params.huanzhePhone != null and params.huanzhePhone != 'null' ">
+                and a.huanzhe_phone like CONCAT('%',#{params.huanzhePhone},'%')
+            </if>
+            <if test=" params.huanzheIdNumber != '' and params.huanzheIdNumber != null and params.huanzheIdNumber != 'null' ">
+                and a.huanzhe_id_number like CONCAT('%',#{params.huanzheIdNumber},'%')
+            </if>
+            <if test="params.sexTypes != null and params.sexTypes != ''">
+                and a.sex_types = #{params.sexTypes}
+            </if>
+
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>

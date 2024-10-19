@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.BingliDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.guahao_id as guahaoId
+        ,a.yisheng_id as yishengId
+        ,a.bingli_uuid_number as bingliUuidNumber
+        ,a.zhusu_content as zhusuContent
+        ,a.zhenduan_content as zhenduanContent
+        ,a.kaiyao_content as kaiyaoContent
+        ,a.bingli_types as bingliTypes
+        ,a.insert_time as insertTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.BingliView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,guahao.guahaorenyuan_id as guahaoGuahaorenyuanId
+        ,guahao.yisheng_id as guahaoYishengId
+        ,guahao.guahao_uuid_number as guahaoUuidNumber
+        ,yisheng.yisheng_name as yishengName
+        ,yisheng.yisheng_phone as yishengPhone
+        ,yisheng.yisheng_photo as yishengPhoto
+        ,yisheng.keshi_types as keshiTypes
+        ,yisheng.zhiwei_types as zhiweiTypes
+        ,yisheng.guahaofei as guahaofei
+
+        FROM bingli  a
+        left JOIN guahao guahao ON a.guahao_id = guahao.id
+        left JOIN yisheng yisheng ON a.yisheng_id = yisheng.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test="params.guahaoId != null and params.guahaoId != ''">
+                and (
+                    a.guahao_id = #{params.guahaoId}
+                )
+            </if>
+            <if test="params.yishengId != null and params.yishengId != ''">
+                and (
+                    a.yisheng_id = #{params.yishengId}
+                    or guahao.yisheng_id = #{params.yishengId}
+                )
+            </if>
+            <if test=" params.bingliUuidNumber != '' and params.bingliUuidNumber != null and params.bingliUuidNumber != 'null' ">
+                and a.bingli_uuid_number like CONCAT('%',#{params.bingliUuidNumber},'%')
+            </if>
+            <if test=" params.zhusuContent != '' and params.zhusuContent != null and params.zhusuContent != 'null' ">
+                and a.zhusu_content like CONCAT('%',#{params.zhusuContent},'%')
+            </if>
+            <if test=" params.zhenduanContent != '' and params.zhenduanContent != null and params.zhenduanContent != 'null' ">
+                and a.zhenduan_content like CONCAT('%',#{params.zhenduanContent},'%')
+            </if>
+            <if test=" params.kaiyaoContent != '' and params.kaiyaoContent != null and params.kaiyaoContent != 'null' ">
+                and a.kaiyao_content like CONCAT('%',#{params.kaiyaoContent},'%')
+            </if>
+            <if test="params.bingliTypes != null and params.bingliTypes != ''">
+                and a.bingli_types = #{params.bingliTypes}
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+
+                <!-- 判断挂号的id不为空 -->
+            <if test=" params.guahaoIdNotNull != '' and params.guahaoIdNotNull != null and params.guahaoIdNotNull != 'null' ">
+                and a.guahao_id IS NOT NULL
+            </if>
+            <if test="params.huanzheId != null  and params.huanzheId != ''">
+                and guahao.huanzhe_id = #{params.huanzheId}
+            </if>
+            <if test="params.guahaorenyuanId != null  and params.guahaorenyuanId != ''">
+                and guahao.guahaorenyuan_id = #{params.guahaorenyuanId}
+            </if>
+            <if test=" params.guahaoUuidNumber != '' and params.guahaoUuidNumber != null and params.guahaoUuidNumber != 'null' ">
+                and guahao.guahao_uuid_number like CONCAT('%',#{params.guahaoUuidNumber},'%')
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(guahao.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(guahao.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+                <!-- 判断医生的id不为空 -->
+            <if test=" params.yishengIdNotNull != '' and params.yishengIdNotNull != null and params.yishengIdNotNull != 'null' ">
+                and a.yisheng_id IS NOT NULL
+            </if>
+            <if test=" params.yishengName != '' and params.yishengName != null and params.yishengName != 'null' ">
+                and yisheng.yisheng_name like CONCAT('%',#{params.yishengName},'%')
+            </if>
+            <if test=" params.yishengPhone != '' and params.yishengPhone != null and params.yishengPhone != 'null' ">
+                and yisheng.yisheng_phone like CONCAT('%',#{params.yishengPhone},'%')
+            </if>
+            <if test="params.keshiTypes != null  and params.keshiTypes != ''">
+                and yisheng.keshi_types = #{params.keshiTypes}
+            </if>
+
+            <if test="params.zhiweiTypes != null  and params.zhiweiTypes != ''">
+                and yisheng.zhiwei_types = #{params.zhiweiTypes}
+            </if>
+
+            <if test="params.guahaofeiStart != null ">
+                <![CDATA[  and yisheng.guahaofei >= #{params.guahaofeiStart}   ]]>
+            </if>
+            <if test="params.guahaofeiEnd != null ">
+                <![CDATA[  and yisheng.guahaofei <= #{params.guahaofeiEnd}   ]]>
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>
